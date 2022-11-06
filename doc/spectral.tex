@@ -1,0 +1,702 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[a4paper,top=2cm,bottom=3cm,inner=2cm,outer=2cm,includehead]{geometry} % for pdf viewing
+
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\linespread{1.1}
+
+\author{Alberto Tibaldi}
+\title{The Spectral Element Method}
+
+\hypersetup{pdfborder={0 0 0},
+colorlinks=true,
+citecolor=blue,
+linkcolor=blue}
+
+\input{newcommands.tex}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Several physical and engineering models can be described as boundary value problems (BVPs) consisting of one or more differential equations to be solved in a domain defined by the boundary conditions (BCs). The boundary conditions, which should be specified at each extreme of the domain, can be classified into three categories: Dirichlet conditions (value of the solution), Neumann conditions (value of the derivative of the solution normal to the boundary edge, or flux), or Robin conditions (a combination of the solution and of its flux); when the value to be enforced is zero, conditions are called ``homogeneous''.
+
+Among the techniques that can be used to solve problems based on ordinary or partial differential equations (ODEs or PDEs), spectral methods are very interesting candidates. Although spectral methods have been introduced in the mid-1940s, their first rigorous study was carried out by Gottlieb and Orszag in 1977 \cite{gottlieb}, who summarized the state of the art in their theory and application. These schemes derive from the method of weighted residuals, where a set of basis functions is used to approximate the solution of the ODE and a weak formulation is used to minimize the error in the expansion. The method accuracy can be improved by refining the approximation: the so-called $h$-refinement consists of decomposing the domain into several elements, whereas $p$-refinement techniques rely on the use of high order basis functions. Finite element methods (FEMs) are pure $h$-refinement methods, since the solution domain is divided into several small elements and low order local functions are used to expand the solution and to test the equations \cite{silvester} - \cite{vichnevetsky}; this allows to study arbitrarily-varying profiles of the physical parameters of the model (\textit{e.g.,} refractive index in optical wave equations, or thermal conductivity in heat equation). On the other hand, in spectral methods both the expansion and test functions are chosen to be infinitely differentiable entire domain functions, leading to a purely $p$-refinement method. Even if these methods exhibit exponential convergence\footnote{\textit{i.e.,} exponential decay of the weighting coefficients of the basis functions by increasing the order of the method, so much faster than standard FEM where the basis functions are linear} when the physical parameters vary smoothly on the domain, if abrupt variations of these parameters occur (such as material discontinuities), the presence of Gibbs phenomena\footnote{Gibbs phenomena consist of oscillations occurring when a discontinuous function or a function with non-continuous derivatives is approximated with smooth, \textit{i.e.,} C$^{(\infty)}$, functions} strongly affect the solution accuracy.
+
+A major leap towards the ``mathematical Nirvana'' of a method of arbitrarily high order capable of application to arbitrary physical parameters is represented by spectral element methods (SEMs). Spectral element methods are based on the decomposition of the domain of the BVP in a small number of sub-domains (or ``patches''); then, a set of local basis functions is defined for each patch in a reference (or ``parent'') domain that can be transformed into the $j$-th patch through a linear mapping \cite{canuto1} - \cite{canuto2}. Then a unique, entire domain set of boundary adapted functions is synthesized starting from the local sets, through basis recombination procedures \cite{tibaldiphd}, \cite{peverini}.
+
+The domain decomposition can be applied to each interface where an abrupt variation of the physical properties occurs. The resulting method can be interpreted as an application of the single-domain spectral method in each region where properties are varying smoothly, leading to exponential convergence and maintaining the flexibility of FEM. Additionally, different resolutions (\textit{i.e.,} different orders of the basis functions) can be used in each patch, allowing efficient representations of the solution. Finally, just like in FEMs, this method can be efficiently coupled to other methods or to analytic solutions, leading to hybrid methods.
+
+\section{Method of weighted residuals}
+
+An ODE is a functional equation or, in other words, a relation between a linear operator $\cL$ applied to a function $\psi(x)$, and another function $\varphi(x)$,
+
+\begin{equation}
+\cL \psi(x) = \varphi(x), ~~~~~ x \in \cD.
+\label{eq:functionalequation}
+\end{equation}
+Here $\cD$ is the domain of the operator $\cL$, defined by the boundary conditions of the problem. This operator can be seen as a mapping from a function space to another; in our case, $\cL$ is a differential operator, so it maps a function space to another one, larger. As an example, if $\psi(x)$ is a function with one continuous derivative, $\varphi(x)$ is only continuous; since there are \textit{more continuous functions than differentiable functions}, $\cL$ maps the elements of a space to the ones of a larger space. Even if this functional analysis point of view is, at least for me, very fascinating, it is not so useful to solve our real problem. Indeed, in practical situations, $\varphi(x)$ is a known term, which is related to the ``excitation'' of the method, $\psi(x)$ is unknown, and our objective is its determination. 
+
+In most cases, the solution of an ODE cannot be performed by analytical derivations; moreover, even if in few peculiar situations the differential operator lends itself to simplifying manipulations, nothing can be done for arbitrary known terms $\varphi(x)$. People usually say something like ``Yeah but we can solve the ODE with the computer!'', and they are right, but the point is: a computer cannot solve a functional equation, since it cannot ``understand'' it; the functional equation should be transformed in something else. Computers are very good computators, rather than mathematicians: they do not understand problems! On the other hand, one of their main skills is the solution of linear systems, so, \eqref{eq:functionalequation} should be transformed in a linear system, somehow. 
+
+This section describes a possible strategy for casting a functional equation into a linear system. A possible procedure is based on the application of the Rayleigh-Ritz theorem, which leads to a variational formulation of the ODE. The very same result can be obtained in a more intuitive way, by the method of weighted residuals \cite{vichnevetsky}; this is based on a geometrical idea: the projections of the functional equation on the elements of a (finite) subspace are coupled linear algebraic equations, leading to a linear system. In this view, the first step is
+
+\begin{equation}
+\psi(x) = \sum_{n=1}^{N\p{fun}} c_n f_n(x) + r(x),
+\label{eq:approxpsi}
+\end{equation}
+which reads, \textit{the solution is equal to a linear combination of known functions $f_n(x)$ weighted with unknown coefficients $c_n$, less than a residue $r(x)$}. So, by substituting in \eqref{eq:functionalequation}, it is obtained
+
+\[
+\cL \left[ \sum_{n=1}^{N\p{fun}} c_n f_n(x) + r(x) \right] = \sum_{n=1}^{N\p{fun}} c_n \cL f_n(x) + \cL r(x) = \varphi(x).  
+\]
+Here, linearity is used to switch $\cL$ and the sum. Now, the problem has been transformed into the determination of coefficients, so of numbers, instead of functions. However, this is still a functional equation, which cannot be handled by a computer. Therefore, the second step consists in multiplying both sides times functions $g_m(x)$ and integrating on the solution domain $\cD = [x\p{l},x\p{r}]$ defined by the conditions in the left and right boundaries $x\p{l}$ and $x\p{r}$; this is done for $N\p{fun}$ projections:
+
+\[
+\sum_{n=1}^{N\p{fun}} c_n \int_{x\p{l}}^{x\p{r}} \cL f_n(x) g_m(x) \, \rd x + \int_{x\p{l}}^{x\p{r}} \cL r(x) g_m(x) \, \rd x = \int_{x\p{l}}^{x\p{r}} \varphi(x) g_m(x) \, \rd x, ~~~~~ m=1 ... N\p{fun}.
+\]
+The projection functions $g_m(x)$ are commonly referred to as ``test functions'', recalling the theory of distributions, where a distribution is characterized its functionals, defined as projections on smooth functions. These equations can be compactly re-written as
+
+\[
+\sum_{n=1}^{N\p{fun}} c_n L_{mn} + r_m = \varphi_m, ~~~~~ m=1 ... N\p{fun},
+\]
+with the following definitions:
+
+\begin{align*}
+L_{mn} &= \int_{x\p{l}}^{x\p{r}} \cL f_n(x) g_m(x) \, \rd x \\
+r_m &= \int_{x\p{l}}^{x\p{r}} \cL r(x) g_m(x) \, \rd x \\
+\varphi_m &= \int_{x\p{l}}^{x\p{r}} \varphi(x) g_m(x) \, \rd x.
+\end{align*}
+Alternatively, this expression can be written in its vector form
+
+\[
+\DL \, \vc + \vr = \vvarphi,
+\]
+where this notation is built by exploiting the matrix row-column product. Now, the coefficients can be found as the solution of the linear system
+
+\[
+\DL \, \vc =  \vvarphi
+\]
+obtained by omitting the $\vr$ vector. Due to the projective nature of this simple approach, the solution coefficients $\vc$ minimize the residual in the least squares sense.
+
+\subsection{Application example: Gal\"{e}rkin solution of a wave equation eigenproblem}
+\label{sect:examplegalerkin}
+
+In order to clarify conceptual notation, it is useful to apply it to a practical problem; since no explanation about the synthesis of the basis functions have been provided yet, the full solution of the problem cannot be obtained. The problem to be introduced is the determination of the eigenvalues of the wave equation
+
+\[
+\frac{\rd^2 \psi(x)}{\rd x^2} = - k^2 \psi(x), ~~~~~ x \in [0, \pi],
+\]
+where Neumann boundary conditions are required for $x\p{l}=0$, $x\p{r}=\pi$. Eigenvalue problems are homogeneous, so no forcing term appears: $\varphi(x)=0$. It can be shown that the solutions of this problem are the integers
+
+\[
+k = 0, 1, 2, ... 
+\]
+Indeed, since this is a problem defined within a bounded domain, the spectrum of this operator consists of a discrete infinity of eigenvalues (no continuum or residual spectra exist). The method of weighted residuals is now applied to this equation, starting from the expansion of the solution:
+
+\[
+\sum_{n=1}^{N\p{fun}} c_n \frac{\rd^2 f_n(x)}{\rd x^2} + \frac{\rd^2 r(x)}{\rd x^2} = - k^2 \sum_{n=1}^{N\p{fun}} c_n f_n(x) - k^2 r(x).
+\]
+In this example, as well in most cases, the Gal\"{e}rkin\footnote{The method is commonly credited to the russian mathematician Boris Grigor'evic Gal\"{e}rkin, whose correct pronounce is ``Galyorkin''; however, several contemporary researchers, such ass the swiss mathematician Walther Ritz, were working simultaneously on this subject.} version of the method of weighted residuals is applied; this consists of using test functions equal to the expansion functions. Then, by defining an equivalent term $\cL r(x)$ including the residual terms (which will be eventually eliminated from the equation),
+
+\[
+\sum_{n=1}^{N\p{fun}} c_n \int_0^\pi \frac{\rd^2 f_n(x)}{\rd x^2} f_m(x) \, \rd x + \int_0^\pi \cL r(x) f_m(x) \, \rd x = - k^2 \sum_{n=1}^{N\p{fun}} c_n \int_0^\pi f_n(x) f_m(x) \, \rd x.
+\]
+The left-hand side integral can be integrated by parts, leading to
+
+\[
+\int_0^\pi \frac{\rd^2 f_n(x)}{\rd x^2} f_m(x) \, \rd x = \val{\frac{\rd f_n(x)}{\rd x} f_m(x)}_0^\pi - \int_0^\pi \frac{\rd f_n(x)}{\rd x} \frac{\rd f_m(x)}{\rd x} \, \rd x.
+\]
+This step is largely used in the solution of second-order equations, for at least two reasons. The superficial one, is that it allows to avoid the synthesis of the second derivatives of the basis functions, which may be an annoying task. The important point in applying integration by parts is the possibility to enforce Neumann conditions as \textbf{natural boundary conditions}. Natural boundary conditions are, usually, constraints on flux quantities, so conditions on the derivatives of the solution; such conditions can be enforced in the solution without restricting the set of expansion/test functions\footnote{This point will be more clear when discussing the synthesis procedure}, but simply by introducing them in the functional to be minimized, \textit{i.e.,} the residual. This can be done by defining an equivalent projected residual vector element as
+
+\[
+r_m\a{eq} = \sum_{n=1}^{N\p{fun}} c_n \val{\frac{\rd f_n(x)}{\rd x} f_m(x)}_0^\pi + \int_0^\pi \cL r(x) f_m(x) \, \rd x.
+\]
+Then, it is possible to complete the formulation of the problem by defining the following matrix elements:
+
+\begin{align}
+K_{mn} &= \int_0^\pi \frac{\rd f_n(x)}{\rd x} \frac{\rd f_m(x)}{\rd x} \, \rd x \label{eq:stiffmatrixdef} \\
+M_{mn} &= \int_0^\pi f_n(x) f_m(x) \, \rd x \label{eq:massmatrixdef}.
+\end{align}
+The matrices $\DK$ and $\DM$ are referred to as ``stiffness' and ``mass'' matrices, according to the inherited civil engineering FEM notation; the matrix $\DM$ is also called Gram matrix. With these definitions, the linear system can be written as
+
+\[
+- \DK \, \vc = - k^2 \DM \, \vc.
+\]
+Here, the residual have not been introduced; by this way, the solution will minimize it in the least squares sense. The Neumann boundary condition, which is part of the functional to be minimized, will be satisfied progressively better by increasing the order of the method. Once that this method is understood, it is directly possible to write this expression, to save time. However, it is remarked that the natural Neumann boundary condition formulation requires the ``integration by parts'' step, otherwise, boundary conditions on derivatives should be enforced explicitly on the basis functions. If functions are not orthonormal, the mass matrix is not the identity, and this is a generalized linear eigenvalue problem. Instead than solving this, it is possible to write
+
+\[
+\DM^{-1} \DK \, \vc = k^2 \vc.
+\]
+The solutions of this problem are the eigenvalues $k^2$ and the eigenvectors $\vc$, which are also the coefficients for rebuilding the solution. This problem will be resumed later, when the expressions of the integrals will be available.
+
+
+
+
+
+
+
+
+%Such as singular functions, it is more indicated to use this \cite{tibaldiphd}
+
+
+
+%It should be remarked that the residual has been omitted, for the sake of compactness; indeed, since it will not be included in the final, linear system, it is pointless to include it in the formulation. 
+
+
+%\section{Synthesis of single-domain basis functions}
+
+%Before starting with multi-domain approaches, it is useful to work on the easier single-domain case.
+
+
+
+%baba this is useful to fix ideas but it is better to propose a practical example.
+
+%baba several equations are second order, so bababa
+
+
+\section{Spectral method}
+
+The solution of Sturm-Liouville problems defined in the parent domain is typically used to synthesize spectral methods basis functions. Indeed, the spectral approximation of the solution of a differential problem is usually regarded as a finite expansion of eigenfunctions of a Sturm-Liouville problem; in spectral methods, the most appealing problems are the ones such that the expansion of an infinitely smooth function in terms of their eigenfunctions guarantees spectral accuracy. In particular, spectral accuracy is ensured if the Sturm-Liouville problem is singular \cite{canuto1}. Among these issues, particular importance rests with those problems whose eigenfunctions are algebraic polynomials, because of the efficiency with they can be evaluated and differentiated numerically. In this section the basis functions for spectral methods on single domains are defined starting from the main classes of orthogonal polynomials, and the mapping procedure from their parent domain to the physical one is described.
+
+\subsection{Legendre polynomials}
+
+Legendre polynomials are the eigenfunctions of the Legendre differential equation
+
+\begin{equation}
+\frac{\rd}{\rd u} \left[ (1-u^2) \frac{\rd}{\rd u} \rP_n(u) \right] + n(n+1) \rP_n(u) = 0.
+\label{eq:legendrediff}
+\end{equation}
+The peculiarity of such polynomials is their orthonormality with respect to the scalar product
+
+\begin{equation}
+\int_{-1}^{+1} \rP_n(u) \, \rP_m(u) \, \rd u = \frac{2}{2n+1} \delta_{mn} = \norm{\rP_n(u)}_2^2 \delta_{mn}.
+\label{eq:legendrenorm}
+\end{equation}
+This is useful to compute the (in this case, diagonal) mass matrix defined in \eqref{eq:massmatrixdef}. Even if MATLAB provides two functions to generate those polynomials, it is much more efficient to synthesize them ``manually'' by means of recurrence relations. So, starting from the first two orders,
+
+\begin{align*}
+\rP_0(u) &= 1 \\
+\rP_1(u) &= u \\
+\rP_{n+1}(u) &= \frac{1}{n+1} \left[ (2 n + 1) u \rP_n(u) - n \rP_{n-1}(u) \right].
+\end{align*}
+The $u=1$ limit value of these polynomials is 
+
+\[
+\rP_n(1) = 1.
+\]
+Moreover, it can be shown that
+
+\[
+\rP_n(-u) = (-1)^n \rP_n(u).
+\]
+The first derivative of Legendre polynomials can be computed as
+
+\[
+\frac{\rd}{\rd u} \rP_n(u) = \frac{n}{u^2 - 1} \left[ u \rP_n(u) - \rP_{n-1}(u) \right].
+\]
+At $u=1$, this expression has a removable singularity, which should be treated analytically, leading to
+
+\[
+\val{\frac{\rd \rP_n(u)}{\rd u}}_{u=1} = \frac{n(n+1)}{2}.
+\]
+Legendre functions of even (odd) orders are even (odd) functions, so their derivatives are odd (even) functions; therefore, it can be written
+
+\[
+\val{\frac{\rd \rP_n(u)}{\rd u}}_{-u} = (-1)^{n-1} \val{\frac{\rd \rP_n(u)}{\rd u}}_{u}.
+\]
+The second derivative, if necessary, can be computed from \eqref{eq:legendrediff}:
+
+\begin{align*}
+\frac{\rd}{\rd u} \left[ (1-u^2) \frac{\rd}{\rd u} \rP_n(u) \right] + n(n+1) \rP_n(u) &= \\
+\frac{\rd \rP_n(u)}{\rd u} \frac{\rd}{\rd u} ( 1 - u^2 ) + (1-u^2) \frac{\rd^2 \rP_n(u)}{\rd u^2} + n (n+1) \rP_n(u) &= \\
+= (1 - u^2) \frac{\rd^2 \rP_n(u)}{\rd u^2} - 2 u \frac{\rd \rP_n(u)}{\rd u} + n(n+1) \rP_n(u) &= 0.
+\end{align*}
+So:
+
+\[
+\frac{\rd^2 \rP_n(u)}{\rd u^2} = \frac{1}{1 - u^2} \left[ 2 u \frac{\rd \rP_n(u)}{\rd u} - n(n+1) \rP_n(u) \right].
+\]
+It is once again necessary to solve the removable singularity at $u=1$; in this case, this is more complicated, therefore it has been done by means of Wolfram Mathematica, with the following script:
+
+\begin{verbatim}
+
+f[x_] = LegendreP[n,x]
+Limit[f''[x], x -> 1]
+
+\end{verbatim}
+the result of this operation is:
+
+\[
+\val{\frac{\rd^2 \rP_n(u)}{\rd u^2}}_{u=1} = \frac{1}{8} (n^3 + 2 n^2 - n - 2).
+\]
+The second derivative of Legendre polynomials has the same parity of the Legendre polynomials, therefore
+
+\[
+\val{\frac{\rd^2 \rP_n(u)}{\rd u^2}}_{-u} = (-1)^n \val{\frac{\rd^2 \rP_n(u)}{\rd u^2}}_{u}.
+\]
+
+\subsection{Chebyshev polynomials}
+
+An alternative basis for spectral methods is the Chebyshev polynomials one. Usually, Legendre polynomials are more indicated to be applied in spectral methods, since they are defined naturally as the orthogonal polynomials with the standard scalar product. Chebyshev polynomials are still orthogonal, but with respect to a different scalar product; however, it may be useful to define them.
+
+Chebyshev polynomials (of first kind) are solutions of the Chebyshev differential equation
+
+\begin{equation}
+(1-u^2) \frac{\rd^2 \rT_n(u)}{\rd u^2} - u \frac{\rd \rT_n(u)}{\rd u} + n^2 \rT_n(u) = 0.
+\label{eq:chebyshevdiff}
+\end{equation}
+One of the peculiarity of such polynomials is their synthesis easiness:
+
+\begin{equation}
+\rT_n(u) = \cos(n \arccos(u)).
+\label{eq:chebsynthesis}
+\end{equation}
+Moreover, their derivative can be written as
+
+\begin{equation}
+\frac{\rd \rT_n(u)}{\rd u} = n \rU_{n-1}(u),
+\label{eq:chebdersynthesis}
+\end{equation}
+where $\rU_n$ denote the $n$-th order Chebyshev polynomial of second kind; these polynomials can be synthesized simply as well as the first kind ones:
+
+\[
+\rU_n(u) = \frac{\sin((n+1) \vartheta)}{\sin \vartheta}, ~~~~~~ \vartheta = \arccos u.
+\]
+Unfortunately, as well as Legendre polynomials concern, this expression exhibits a removable singularity for $\vartheta = n \pi$; therefore, its limit should be computed analytically:
+
+\[
+\lim_{\vartheta \rightarrow 0} \rU_n(u(\vartheta)) = n+1.
+\]
+indeed, if $\vartheta=0$, $u = \cos \vartheta = 1$, so
+
+\[
+\val{\frac{\rd \rT_n(u)}{\rd u}}_{u=+1} = n^2.
+\]
+Instead, if $u = -1$, $\vartheta = \pi$,
+
+\[
+\lim_{u = -1} \rU_n(u) = \lim_{\vartheta \rightarrow \pi} \frac{\sin((n+1) \vartheta)}{\sin \vartheta} = (-1)^n (n+1).
+\]
+To sum up, by recalling \eqref{eq:chebdersynthesis},
+
+\[
+\val{\frac{\rd \rT_n(u)}{\rd u}}_{u=-1} = (-1)^{n-1} n^2.
+\]
+The second derivative of first-kind Chebyshev polynomials can be computed from the differential equation \eqref{eq:chebyshevdiff} as
+
+\[
+\frac{\rd^2 \rT_n(u)}{\rd u^2} = \frac{1}{1-u^2} \left[ u \frac{\rd \rT_n(u)}{\rd u} - n^2 \rT_n(u) \right].
+\]
+Once again, there are removable singularities for $u=\pm 1$. The limit for $u=1$ can be solved with Mathematica:
+
+\begin{verbatim}
+
+f[x_] = ChebyshevT[n,x]
+Limit[f''[x], x -> 1]
+
+\end{verbatim}
+This results in:
+
+\[
+\val{\frac{\rd^2 \rT_n(u)}{\rd u^2}}_{u=+1} = \frac{1}{3} n^3 \left( - 1 + n^2 \right).
+\]
+For the $u=-1$ limit, it can be shown that $\rT_n(u)$ is even (odd) for even (odd) $n$; then, its second derivative has the same parity properties, and
+
+\[
+\val{\frac{\rd^2 \rT_n(u)}{\rd u^2}}_{-u} = (-1)^n \val{\frac{\rd^2 \rT_n(u)}{\rd u^2}}_{u}.
+\]
+
+\subsection{Mapping to a generic bounded interval}
+\label{sect:mapping}
+
+Legendre or Chebyshev polynomials are usually defined in a ``parent'' domain, $u \in [-1,1]$. The main reason behind this fact is the definition of these polynomials, which are chosen to be orthogonal (with the relevant weights) when integrated in $[-1,1]$. Moreover, even if such polynomials can be evaluated out of this parent domain, they would explode, causing numerical problems.
+
+Since generally the ODE should be solved in a physical interval $[x\p{l},x\p{r}]$, a mapping between these two ``worlds'' should be defined:
+
+\[
+[-1,1] \longrightarrow [x\p{l}, x\p{r}].
+\]
+By invoking our high school studies, this can be written as a simple straight line:
+
+\[
+\frac{x - x\p{l}}{x\p{r}-x\p{l}} = \frac{u-(-1)}{1-(-1)}.
+\]
+let $L = x\p{r} - x\p{l}$; then, 
+
+\begin{equation}
+x = \frac{L}{2} u + \frac{L}{2} + x\p{l}.
+\label{eq:mapping}
+\end{equation}
+Similarly, the inverse mapping $u = u(x)$ can be obtained by inverting \eqref{eq:mapping}, so
+
+\begin{equation}
+u = \frac{2}{L} (x - x\p{l}) - 1.
+\label{eq:invmapping}
+\end{equation}
+
+\subsection{Semi-unbounded intervals: Laguerre polynomials}
+
+In order to handle semi-infinite intervals, Laguerre polynomials should be used to build the basis functions:
+
+\[
+f_n(u) = \cL_n(u) \, \exp{-\frac{u}{2}}.
+\]
+Since in this case the parent domain $u$ is $u \in [0, + \infty)$, the only interesting mapping is
+
+\[
+x = \alpha u + x\p{l}, ~~~~~ \alpha = \pm 1.
+\]
+The inverse mapping is
+
+\[
+u = \frac{x - x\p{l}}{\alpha}.
+\]
+Therefore, the basis functions in the spatial domain is
+
+\[
+f_n(x) = \cL_n(u(x)) \exp{- \frac{1}{2} u(x)},
+\]
+and
+
+\[
+\frac{\rd f_n(x)}{\rd x} = \frac{\rd f_n(u)}{\rd u} \frac{\rd u}{\rd x} = \frac{1}{\alpha} \left[ \frac{\rd \cL_n(u)}{\rd u} - \frac{1}{2} \cL_n(u) \right] \exp{- \frac{u}{2}}.
+\]
+
+\subsubsection{Application example: determination of the effective refractive index}
+
+The eigenproblem of a planar dielectric waveguide is \cite{orta}:
+
+\[
+\frac{\rd^2 u(x)}{\rd x^2} + (k^2 - \beta^2) u(x) = 0,
+\]
+where the problem is the determination of the $z$ propagation constant $\beta$. This problem can be slightly modified as
+
+\[
+\frac{\rd^2 u(x)}{\rd x^2} + k_0^2 ( n^2(x) - n\p{eff}^2) u(x) = 0,
+\]
+and then it is cast into the eigenproblem
+
+\[
+\frac{\rd^2 u(x)}{\rd x^2} + k_0^2 n^2(x) u(x) = k_0^2 n\p{eff}^2 u(x),
+\]
+with eigenfunction $u(x)$ and eigenvalue $k_0^2 n\p{eff}^2$. This problem can be formulated with SEM, by using the indications of \ref{sect:examplegalerkin}. Just an additional formulation, about integration: for the $z = -u$ case, $\rd z = - \rd u$, and
+
+\[
+\int_{-\infty}^0 f(z) \, \rd z = - \int_{+ \infty}^0 f(u) \, \rd u = + \int_0^{+ \infty} f(u) \, \rd u.
+\]
+
+
+
+
+
+
+% Integrare con le varie relazioni che si trovano sui polinomi di Laguerre, ed eventualmente con gli integrali analitici!!!!!
+
+
+
+\subsection{Definition of the basis functions and calculation of the integrals}
+
+The mapping described in the previous section can be used to complete the synthesis of the spectral method basis functions; focusing on Legendre polynomials:
+
+\begin{equation}
+f_n(x) = \rP_n(u(x)).
+\label{eq:smbasisfunctions}
+\end{equation}
+Derivatives can be computed by applying the chain rule
+
+\[
+\frac{\rd f_n(x)}{\rd x} = \frac{\rd \rP_n(u)}{\rd u} \frac{\rd u}{\rd x},
+\]
+where, from \eqref{eq:invmapping},
+
+\[
+\frac{\rd u}{\rd x} = \frac{2}{L}.
+\]
+Similar calculations can be performed for the second derivative:
+
+\[
+\frac{\rd^2 f_n(x)}{\rd x^2} = \frac{\rd}{\rd x} \left[ \frac{\rd f_n(x)}{\rd x} \right] = \frac{\rd u}{\rd x} \frac{\rd}{\rd x} \left[ \frac{\rd f_n(u)}{\rd u} \right] = \frac{\rd u}{\rd x} \frac{\rd }{\rd u} \left[ \frac{\rd f_n(x)}{\rd x} \right] = \left( \frac{\rd u}{\rd x} \right)^2 \frac{\rd^2 f_n}{\rd u^2}.
+\]
+The integrals can be cast in the parent domain by applying the substitution theorem; starting from
+
+\[
+\int_{x\p{l}}^{x\p{r}} f(x) \, \rd x,
+\]
+by recalling \eqref{eq:mapping}, it is obtained
+
+\[
+\rd x = \frac{L}{2} \, \rd u.
+\]
+so
+
+\[
+\int_{x\p{l}}^{x\p{r}} f(x) \, \rd x = \frac{L}{2} \int_{-1}^{+1} f(u(x)) \, \rd u.
+\]
+This formula is very useful because it is well suited for the Gauss-Legendre quadrature rule. Moreover, for Legendre polynomials, this can be also computed analytically, as described in the following.
+
+As a first ``game problem'' to introduce the integration procedure, let us consider the representation of an arbitrary function $f(u)$ with Legendre polynomials:
+
+\[
+f(u) \simeq \sum_{n=0}^{N} c_n \rP_n(u), ~~~~ u \in [-1,1].
+\]
+The approximation on the right-hand side minimizes the residual (omitted from the formulation for the sake of compactness) in the least squares sense, as usual. This can be performed in the spatial domain $x$ as well, by using the aforementioned mapping, which is not introduced here to ease the calculations. As a first step, both members are projected on the $p$-th Legendre polynomial, for $p=0...N$:
+
+\[
+\int_{-1}^{+1} f(u) \, \rP_p(u) \, \rd u = \sum_{n=0}^N c_n \int_{-1}^{+1} \rP_n(u) \, \rP_p(u) \, \rd u, ~~~~~~ p = 0...N.
+\]
+Since $f(u)$ is an arbitrary function, the left-hand side integrals must be computed numerically; instead, for the right-hand side, from \eqref{eq:legendrenorm}, it can be written
+
+\[
+\int_{-1}^{+1} \rP_n(u) \, \rP_p(u) \, \rd u = \delta_{pn} \frac{2}{2p+1}.
+\]
+So, the equation reduces to (thanks to Kronecker's delta properties):
+
+\[
+\int_{-1}^{+1} f(u) \, \rP_p(u) \, \rd u = c_p \frac{2}{2p+1},
+\]
+then, by inverting,
+
+\[
+c_p = \left( p + \frac{1}{2} \right) \int_{-1}^{+1} f(u) \, \rP_p(u) \, \rd u.
+\]
+This can be written also in vector notation, as
+
+\[
+\vc = \DM^{-1} \vb.
+\]
+This problem helps us to introduce the calculation of
+
+\[
+\int_{-1}^{+1} \frac{\rd \rP_n(u)}{\rd u} \rP_p(u) \, \rd u.
+\]
+In other words: how can a derivative of $\rP_n(u)$ be approximated with Legendre polynomials? This can be useful for spectral methods, to compute part of the system matrix. The objective is to write
+
+\[
+\frac{\rd \rP_n(u)}{\rd u} = \sum_m c_m^{(n)} \rP_m(u),
+\]
+where $c_m^{(n)}$ is the coefficient to be multiplied to the $m$-th Legendre polynomial to obtain the derivative of the $n$-th Legendre polynomial. Then, by projecting, it is obtained
+
+\[
+\int_{-1}^{+1} \frac{\rd \rP_n(u)}{\rd u} \rP_p(u) \, \rd u = c_p^{(n)} \frac{2}{2p + 1},
+\]
+or, more compactly,
+
+\[
+\vd^{(n)} = \DM \, \vc^{(n)}.
+\]
+This can be written in matrix form as
+
+\[
+\DD = \DM \, \DC,
+\]
+by defining a matrix $\DD$ and a matrix $\DC$ with the column vectors $\{ \vd^{(n)} \}$, $\{ \vc^{(n)} \}$
+
+\[
+\DD = 
+\begin{bmatrix}
+\vd^{(0)} & & \vd^{(1)} & & ... & & \vd^{(N)}
+\end{bmatrix} ~~~~
+\DC = 
+\begin{bmatrix}
+\vc^{(0)} & & \vc^{(1)} & & ... & & \vc^{(N)}
+\end{bmatrix}.
+\]
+The objective of this exercise is the determination of $\DD$, since $\DC$ can be found in textbooks, \textit{e.g.,} \cite[eq. (A.30)]{gottlieb}. In order to obtain the second derivative projections, 
+
+\[
+\int_{-1}^{+1} \frac{\rd^2 \rP_n(u)}{\rd u^2} \, \rP_p(u) \, \rd u,
+\]
+by using \cite[eq. (A.31)]{gottlieb}.
+
+The last integral that can be used in a spectral method formulation is
+
+\[
+\int_{-1}^{+1} \frac{\rd \rP_n(u)}{\rd u} \frac{\rd \rP_p(u)}{\rd u} \, \rd u.
+\]
+This integral arises from an integration by parts, therefore the originating idea can be followed to obtain:
+
+\[
+\int_{-1}^{+1} \frac{\rd \rP_n(u)}{\rd u} \frac{\rd \rP_p(u)}{\rd u} \, \rd u = \underbrace{\val{\frac{\rd \rP_n(u)}{\rd u} \rP_p(u)}_{-1}^{+1}}\p{analytic} - \underbrace{\int_{-1}^{+1} \frac{\rd^2 \rP_n(u)}{\rd u^2} \rP_p(u) \, \rd u}\p{\cite[(A.31)]{gottlieb} }.
+\]
+
+\subsubsection{Application example}
+
+Now, it is possible to complete the example reported in Section \ref{sect:examplegalerkin}, since all the ingredients to build the system matrix have been provided. However, with this knowledge, it is not still possible to solve Dirichlet problems, since no information has been provided about the enforcement of Dirichlet boundary conditions; this will be the first point of the following section. As anticipated, if functions are not orthonormal, the mass matrix is not the identity, and this is a generalized linear eigenvalue problem, which should be solved with a specified routine, \textit{e.g.,} in MATLAB,
+
+\begin{verbatim}
+
+[EigVc,EigVl]=eig(K,M);
+
+\end{verbatim}
+
+\subsubsection{Note on function approximation}
+
+If the function $f(u)$ to be approximated is a polynomial or at least it can be well approximated to a polynomial, so
+
+\[
+f(u) = \sum_n a_n u^n,
+\]
+it is possible to compute analytically the projection integrals, for Legendre functions, by computing
+
+\[
+\int_{-1}^{+1} u^n \rP_p(u) \, \rd u,
+\]
+where, for $n=1$ the result is provided in \cite[eq. (A.32)]{gottlieb}, and for $n=2$ in \cite{tibaldimsc}. By iterating the procedure described in the latter reference, further orders should be computed in a similar fashion.
+
+
+% sintesi delle funzioni di base come polinomi + mapping e basta
+
+% f_n(x) = P_n(u(x))
+
+%-- esercizio finale: 1) completare l'esercizio risolvendolo effettivamente
+
+% ma qua non sto spiegando come imporre le condizioni al contorno, quindi qui si può solamente risolvere il problema di neumann, e che cazzo.
+
+\section{Spectral element method: synthesis of basis functions}
+
+In the previous section, basis functions were simply entire-domain polynomials, leading to a purely $p$-refined method. Now, the method will be refined by showing how a domain decomposition strategy can be introduced. In the first section, still useful for single-domain spectral methods, the procedure aimed at enforcing essential boundary conditions, such as Dirichlet or pseudo-periodicity conditions, will be described. Then, a similar technique will be adopted to enforce continuity and orthonormality conditions to the basis functions to be adopted in representing/testing the solution.
+
+\subsection{Treatment of essential boundary conditions}
+
+The example described in Section \ref{sect:examplegalerkin} was tailored in such a way to avoid the synthesis of boundary-adapted basis functions, relying on the fact that Neumann's boundary conditions can be included in the functional minimization (natural boundary condition). By contrast, essential boundary conditions, which involve the value of the solution instead of its flux, should be enforced by restricting the function space used to describe the solution and to test it. This idea can be actuated by means of a \textit{basis recombination procedure}: starting from the original set of basis functions, they can be mixed, recombined, in such a way to obtain a new set of basis functions, which satisfy the desired boundary condition. The latter set is included (stricly or not) in the former; to make this clear, if we compare the space of continuous functions with the one of continuous functions that equal zero in a point, the latter is surely a subspace of the former: there are ``more continuous functions'' than ``continuous functions that vanish in a well defined point'' !
+
+Now, after this ``delicious'' theoretical discussion, the engineer escapes from the Hyperuranion, and asks: ``Ok, nice, how to do implement this basis recombination?''. Well, let us start from the set of non specialized functions $\{\phi_i^{(j)}(x)\}$ defined on each $j$-th patch (since different resolutions can be desired for each patch, these sets can be different); for example, in the case of Legendre polynomials\footnote{obviously, this method can be applied also with patches with different polynomial or even function types, for example to treat singular solution behaviors or unbounded intervals},
+
+\[
+\phi_i^{(j)} = \rP_n(u(x)),
+\]
+where $u(x)$ is the inverse of the mapping from the parent domain to the patch interval, which can be easily derived from the ideas presented in Section \ref{sect:mapping}. Now, let $\{h_k^{(j)}(x)\}$ be the set of basis functions satisfying the essential boundary condition derived from the recombination of $\{\phi_i^{(j)}(x)\}$; let us consider, as clarifying example, a homogeneous Dirichlet boundary condition in $x = x_0$; then, these functions must satisfy
+
+\[
+h_k^{(j)}(x_0) = 0, ~~~~~~~ \forall k.
+\]
+The basis recombination procedure allows to obtain the $k$-th function $h_k^{(j)}$ from a linear combination of all the basis functions of the non-specialized set, so
+
+\[
+h_k^{(j)}(x) = \sum_i H_{ki}^{(j)} \phi_i^{(j)}(x).
+\]
+The coefficient $H_{ki}^{(j)}$ is the weight of the linear combination for the $i$-th non-specialized basis function to obtain the $k$-th boundary-adapted function; this, for each $j$-th patch; the objective is the determination of the resulting matrix $\DH$. The condition to be enforced is
+
+\[
+\sum_i H_{ki}^{(j)} \phi_i^{(j)}(x_0) = 0.
+\]
+This relationship can be written in matrix form as
+
+\[
+(\vphi^{(j)}(x_0))\a{T} \DH^{(j)}  = 0,
+\]
+where the sum is replaced by the matrix product, and this for each $k$-th boundary-adapted function. This is a homogeneous system, whose non-trivial solutions are the basis of the kernel of the vector $(\vphi^{(j)}(x_0))\a{T}$. To this aim, it is useful to compute its singular value decomposition (SVD)
+
+\[
+(\vphi^{(j)}(x_0))\a{T} = \DU\a{(h,\mathit{j})} \DS\a{(h,\mathit{j})} \DV\a{(h,\mathit{j})H}.
+\]
+The SVD of a row vector with $N$ elements provides $N-1$ null singular values. So, since the columns of $\DV\a{(h,\mathit{j})}$ corresponding to null singular values (below a certain threshold) are a basis of the kernel of $(\vphi^{(j)}(x_0))\a{T}$, such columns are used to build the change of basis matrix $\DH$ from non-specialized to boundary-adapted basis functions.
+
+Probably, the procedure described in these sections is not the most efficient. Indeed, basis recombination approaches not based on heavy numerical algorithms such as the SVD can be found in the literature \cite{morf1995}, \cite{bastonero}. Moreover, the SVD is quite ``unstable'', since small variations of the coefficients lead to huge variations of the $\DU$ or $\DV$ matrices. However, this instability does not affect the stability of the entire method; moreover, this method is important since it can be directly used in the extension of multi-domain spectral methods to 2-D geometries \cite{tibaldiphd}.
+
+\subsubsection{Exercise}
+
+At this point, the exercise proposed in Section \ref{sect:examplegalerkin} can be repeated with homogeneous Dirichlet conditions, instead that homogeneous Neumann conditions; the eigenvalues are the natural numbers $k=1, 2, ...$, so with $k=0$ excluded.
+
+\subsection{Enforcing orthonormality}
+
+Numerical methods work better with independent basis functions to avoid redundant representations of the unknown, which are reflected in an ill-conditioned mass matrix; in this view, orthonormal functions are surely the best choice. Then, this section explains how to synthesize, starting from the boundary-adapted basis functions $\{h_k^{(j)}(x)\}$ obtained from the previous section, a set of orthonormal functions $\{g_r^{(j)}(x)\}$. To this aim, it is necessary to apply the Gram-Schmidt algorithm on $\{g_r^{(j)}(x)\}$. Under a different point of view, the two sets of functions are once again related by a change of basis
+
+\[
+g_r^{(j)}(x) = \sum_k G_{rk}^{(j)} h_k^{(j)}(x),
+\]
+and our objective is to build the matrix $\DG^{(j)}$. Such matrix can be calculated once again by the SVD, starting from the mass matrix of the boundary-adapted functions, with element:
+
+\[
+(\DM\a{(h,\mathit{j})})_{mn} = \int_{\cD^{(j)}} h_m^{(j)}(x) h_n^{(j)}(x) \, \rd x.
+\]
+Then, its SVD is computed, leading to
+
+\[
+\DM\a{(h,\mathit{j})} = \DU\a{(g,\mathit{j})} \DS\a{(g,\mathit{j})} \DV\a{(g,\mathit{j})H}.
+\]
+The columns of $\DU\a{(g,\mathit{j})}$ corresponding to the non-zero singular values, \textit{i.e.,} above a certain threshold, are an orthonormal basis of the range of $\DM\a{(h,\mathit{j})}$; such columns are used to build the change of basis matrix $\DG^{(j)}$.
+
+\subsection{Synthesis of entire-domain basis functions}
+
+The final step is the synthesis of entire-domain basis functions that satisfy continuity (or derivability) conditions at the junction points between two patches, starting from the orthonormal, boundary-adapted functions $\{g_r^{(j)}(x)\}$. Our basis recombination approach philosophy can be applied in this case as well, after defining a unique set of basis functions $\{g_\alpha(x)\}$ as the union of all the patch functions:
+
+\[
+\graf{g_\alpha(x)} = \bigcup_{j=1}\a{N\p{p}} \graf{g_r^{(j)}(x)}.
+\]
+By this way, the multi-index $\alpha$ spans both the local and patch indexes $r$ and $j$. Then, the entire-domain, orthonormal, boundary adapted functions $\{f_n(x)\}$ can be obtained as
+
+\[
+f_n(x) = \sum_{\alpha} C_{n\alpha} g_\alpha(x).
+\]
+If these functions should be just continuous in the point $x\p{c}$ between two patches $i$ and $j$, 
+
+\[
+\sum_{\alpha(i)} C_{n\alpha(i)} g_{\alpha(i)}(x\p{c}) - \sum_{\alpha(j)} C_{n\alpha(j)} g_{\alpha(j)}(x\p{c}) = 0
+\]
+should be satisfied. Here, $\alpha(i)$ and $\alpha(j)$ denote the sub-indexes in the patches $i$ and $j$. Then, a row vector $\vd$ with length equal to the sum of all functions belonging to the set $\{g_\alpha(x)\}$ is built, and it is non-zero only for the indices $\alpha(i)$ and $\alpha(j)$; finally, this vector is filled, in the relevant positions, with $(g_{\alpha(i)}(x\p{c}))\a{T}$, and $-g_{\alpha(j)}(x\p{c})$. Finally, a matrix $\DD$ is built with the rows obtained from each condition. Finally,
+
+\[
+\DD = \DU\a{(c)} \DS\a{(c)} \DV\a{(c)H},
+\]
+and, just like for essential boundary conditions, the change of basis matrix $\DC$ is built with the columns of $\DV\a{(c)}$ corresponding to the null singular values.
+
+
+
+
+
+
+
+% alla fine di tutto dire che la SVD non è l'unico metodo, forse manco il più furbo (morf, eccetera), però è versatile, va bene per tutto, eccetera
+
+% ortonormalizzazione: SVD-based implementation of Gram-Schmidt algorithm
+
+
+
+
+% in the case of single domain, the superscript j can be omitted.
+
+
+
+
+% practical example
+
+
+
+
+
+
+%-- la bellissima frase delle dispense
+
+%-- Appendice: formule di integrazione gaussiana
+%-- Appendice: singular value decomposition
+
+
+
+\begin{thebibliography}{99}
+\bibitem{gottlieb} D.~Gottlieb~and~S.~A.~Orszag, ``Numerical analysis of spectral methods: theory and applications,'' \textit{Society for Industrial and Applied Mathematics,} Philadelphia, Pennsylvania, 1977.
+\bibitem{silvester} P.~P.~Silvester~and~R.~L.~Ferrari, ``Finite elements for electrical engineers,'' Third Edition, Cambridge University Press, Cambridge, 1996.
+\bibitem{koshiba} M.~Koshiba, ``Optical waveguide theory by the finite element method,'' KTK Scientific Publishers, Tokyo, 1992.
+\bibitem{vichnevetsky} R.~Vichnevetsky, ``Computer methods for partial differential equations,'' vol. 1, Prentice-Hall Series in Computational Mathematics, New Jersey, 1981.
+\bibitem{canuto1} C.~Canuto,~M.~Y.~Hussaini,~A.~Quarteroni,~and~T.~A.~Zang, ``Spectral methods in fluid dynamics,'' \textit{Springer-Verlag,} Berlin, Germany, 1988.
+\bibitem{canuto15} C.~Canuto,~M.~Y.~Hussaini,~A.~Quarteroni,~and~T.~A.~Zang, ``Spectral methods: fundamentals in single domains,'' \textit{Springer-Verlag,} Berlin, Germany, 2006.
+\bibitem{canuto2} C.~Canuto,~M.~Y.~Hussaini,~A.~Quarteroni,~and~T.~A.~Zang, ``Spectral methods: evolution to complex geometries and applications to fluid dynamics,'' \textit{Springer-Verlag,} Berlin, Germany, 2007.
+\bibitem{tibaldiphd} A.~Tibaldi, ``A mortar element method for the analysis of electromagnetic passive devices,'' Ph.~D. Dissertation, Jan. 2014.
+\bibitem{peverini} O.~A.~Peverini,~G.~Addamo,~G.~Virone,~R.~Tascone,~and~R.~Orta, ``A spectral-element method for the analysis of 2-D waveguide devices with sharp edges and irregular shapes,'' \emph{IEEE Trans. Microw. Theory Techn.,} vol. 59, no. 7, pp. 1685-1695, July 2011.
+\bibitem{abramowitz} M.~Abramowitz~and~I.~A.~Stegun, ``Handbook of mathematical functions,'' National Bureau of Standards, Applied Mathematics Series, Tenth printing, Dec. 1972.
+\bibitem{magnus} W.~Magnus,~F.~Oberhettinger,~and~R.~P.~Soni, ``Formulas and theorems for the special functions of mathematical physics,'' \textit{Grundlehren der mathematischen Wissenschaften}, vol. 52, Berlin, 1966.
+\bibitem{orta} R.~Orta, ``Modes of planar waveguides,'' \textit{Notes from the ``Passive Optical Components'' course}, 2011.
+\bibitem{tibaldimsc} A.~Tibaldi, ``Analysis and design of high-performance horn antennas,'' M.~Sc. Dissertation, Nov. 2011.
+\bibitem{morf1995} R.~H.~Morf, ``Exponentially convergent and numerically efficient solution of Maxwell's equations for lamellar gratings,'' \textit{J. Opt. Soc. Am. A,} vol. 12, no. 5, pp. 1043-1056, May 1995.
+\bibitem{bastonero} S.~Bastonero,~O.~A.~Peverini,~R.~Orta,~and~R.~Tascone, ''Anisotropic surface relief diffraction gratings under arbitrary plane wave incidence,'' \textit{Opt. Quant. Electron.}, vol. 32, no. 6-8, pp. 1013-1025, 2000.
+\end{thebibliography}
+
+\end{document}

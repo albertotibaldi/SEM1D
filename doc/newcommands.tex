@@ -1,0 +1,363 @@
+
+% Nota: questo elenco di comandi � tratto da ``compottica'', la base � quella insomma.
+
+% Comandi di base
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\norm}[1]{\left| \left| #1 \right| \right|}
+\newcommand{\val}[1]{\left. #1 \right|}
+\renewcommand{\exp}[1]{\mathrm{e}^{#1}}
+\newcommand{\realpart}[1]{\mathbb{R}\mathrm{e} \left\{ #1 \right\}}
+\newcommand{\imagpart}[1]{\mathbb{I}\mathrm{m} \left\{ #1 \right\}}
+
+\newcommand{\lapl}[1]{\mathbb{L} \left\{ #1 \right\} }
+\newcommand{\fou}{\mathcal{F}}
+
+% In via di prova
+\newcommand{\rd}{\mathrm{d}}
+\renewcommand{\max}[1]{\mathrm{max} \left\{ #1 \right\}}
+\newcommand{\graf}[1]{\left\{ #1 \right\}}
+
+% Definizione di vettori e matrici
+\newcommand{\dubvet}[2]{\left[ \begin{array}{c} #1 \\ #2 \end{array} \right]}
+\newcommand{\otripvet}[3]{\left[ \begin{array}{ccc} #1 & #2 & #3 \end{array} \right]}
+\newcommand{\tripvet}[3]{\left[ \begin{array}{c} #1 \\ #2 \\ #3 \end{array} \right]}
+\newcommand{\quadvet}[4]{\left[ \begin{array}{c} #1 \\ #2 \\ #3 \\ #4 \end{array} \right]}
+\newcommand{\dubsys}[2]{\left \{ \begin{array}{l} #1 \vspace{0.2cm} \\ #2 \end{array} \right .}
+\newcommand{\tripsys}[3]{\left \{ \begin{array}{l} #1 \\ #2 \\ #3 \end{array} \right .}
+\newcommand{\quadsys}[4]{\left \{ \begin{array}{l} #1 \\ #2 \\ #3 \\ #4 \end{array} \right .}
+\newcommand{\dubmat}[4]{\left[ \begin{array}{cc} #1 & #2 \\ #3 & #4 \end{array} \right]}
+\newcommand{\tripmat}[9]{\left[ \begin{array}{ccc} #1 & #2 & #3 \\ #4 & #5 & #6 \\ #7 & #8 & #9 \end{array} \right]}
+
+
+% Da modificare
+% \newcommand{\ma}[1]{\max \left\{ #1 \right\} }
+
+
+% Da tenere disabilitati
+%\newcommand{\vf}{v_{\mathrm{f}}}
+%\newcommand{\vg}{v_{\mathrm{g}}}
+%\newcommand{\vvf}{\underline{\mathit{v}}_{\mathrm{f}}}
+
+\newcommand{\dy}[1]{\underline{\underline{#1}}}
+\newcommand{\ph}[1]{\mathcal{P}h \left\{ #1 \right\}}
+\newcommand{\tripfou}[1]{\mathcal{F}_3 \left\{ #1 \right\} }
+\renewcommand{\a}[1]{^{\mathrm{#1}}}
+\newcommand{\p}[1]{_{\mathrm{#1}}}
+\newcommand{\heff}{\underline{\mathrm{h}}_\mathrm{eff}}
+\newcommand{\deps}{\underline{\underline{\varepsilon}}}
+\newcommand{\adb}{\alpha_{\mathrm{\tiny{dB}}}}
+\def\sinc{\mathrm{sinc} \,}
+\def\arctan{\mathrm{arctan \, }}
+
+%DA STUDIARE DA STUDIARE Da studiare: questo sicuramente serve per rmu (il roman di mu)
+
+\DeclareFontFamily{U}{euc}{}% I chose euc because the chart is called Euler cursive
+\DeclareFontShape{U}{euc}{m}{n}{<-6>eurm5<6-8>eurm7<8->eurm10}{}%
+\DeclareSymbolFont{AMSc}{U}{euc}{m}{n} % I chose AMSc because AMSa and AMSb are defined in the amsfonts-package
+\DeclareMathSymbol{\rmu}{\mathord}{AMSc}{"16} 
+
+%http://www.superstrate.net/useful/useful.html
+
+%http://www.latex-community.org/forum/viewtopic.php?f=48&t=3792&p=14890
+
+%IN ALTERNATIVA CERCA ALTRI RISULTATI BASATI SU QUEL COMANDO CHE HO TROVATO SUL PDF. LA CHIAVE DI RICERCA USATA NEL DETTAGLIO E' STATA:
+
+\DeclareFontFamily{U}{euc}{}
+
+% Inizia qua l'elenco finale
+
+% Elenco delle lettere in tondo (romanico)
+\newcommand{\ra}{\mathrm{a}}
+\newcommand{\rb}{\mathrm{b}}
+\newcommand{\rc}{\mathrm{c}}
+\renewcommand{\rd}{\mathrm{d}}
+\newcommand{\re}{\mathrm{e}}
+\newcommand{\rf}{\mathrm{f}}
+\newcommand{\rg}{\mathrm{g}}
+\newcommand{\rh}{\mathrm{h}}
+\newcommand{\ri}{\mathrm{i}}
+\newcommand{\rj}{\mathrm{j}}
+\newcommand{\rk}{\mathrm{k}}
+\newcommand{\rl}{\mathrm{l}}
+% \renewcommand{\rm}{\mathrm{m}}
+\newcommand{\rn}{\mathrm{n}}
+\newcommand{\ro}{\mathrm{o}}
+\newcommand{\rp}{\mathrm{p}}
+\renewcommand{\rq}{\mathrm{q}}
+\newcommand{\rr}{\mathrm{r}}
+\newcommand{\rs}{\mathrm{s}}
+\newcommand{\rt}{\mathrm{t}}
+\newcommand{\ru}{\mathrm{u}}
+\newcommand{\rv}{\mathrm{v}}
+\newcommand{\rw}{\mathrm{w}}
+\newcommand{\rx}{\mathrm{x}}
+\newcommand{\ry}{\mathrm{y}}
+\newcommand{\rz}{\mathrm{z}}
+\newcommand{\rA}{\mathrm{A}}
+\newcommand{\rB}{\mathrm{B}}
+\newcommand{\rC}{\mathrm{C}}
+\newcommand{\rD}{\mathrm{D}}
+\newcommand{\rE}{\mathrm{E}}
+\newcommand{\rF}{\mathrm{F}}
+\newcommand{\rG}{\mathrm{G}}
+\newcommand{\rH}{\mathrm{H}}
+\newcommand{\rI}{\mathrm{I}}
+\newcommand{\rJ}{\mathrm{J}}
+\newcommand{\rK}{\mathrm{K}}
+\newcommand{\rL}{\mathrm{L}}
+\newcommand{\rM}{\mathrm{M}}
+\newcommand{\rN}{\mathrm{N}}
+\newcommand{\rO}{\mathrm{O}}
+\newcommand{\rP}{\mathrm{P}}
+\newcommand{\rQ}{\mathrm{Q}}
+\newcommand{\rR}{\mathrm{R}}
+\newcommand{\rS}{\mathrm{S}}
+\newcommand{\rT}{\mathrm{T}}
+\newcommand{\rU}{\mathrm{U}}
+\newcommand{\rV}{\mathrm{V}}
+\newcommand{\rW}{\mathrm{W}}
+\newcommand{\rX}{\mathrm{X}}
+\newcommand{\rY}{\mathrm{Y}}
+\newcommand{\rZ}{\mathrm{Z}}
+
+% Elenco dei vettori
+\newcommand{\va}{\underline{\mathit{a}}}
+\newcommand{\vb}{\underline{\mathit{b}}}
+\newcommand{\vc}{\underline{\mathit{c}}}
+\newcommand{\vd}{\underline{\mathit{d}}}
+\newcommand{\ve}{\underline{\mathit{e}}}
+\newcommand{\vf}{\underline{\mathit{f}}}
+\newcommand{\vg}{\underline{\mathit{g}}}
+\newcommand{\vh}{\underline{\mathit{h}}}
+\newcommand{\vi}{\underline{\mathit{i}}}
+\newcommand{\vj}{\underline{\mathit{j}}}
+\newcommand{\vk}{\underline{\mathit{k}}}
+\newcommand{\vl}{\underline{\mathit{l}}}
+\newcommand{\vm}{\underline{\mathit{m}}}
+\newcommand{\vn}{\underline{\mathit{n}}}
+\newcommand{\vo}{\underline{\mathit{o}}}
+\newcommand{\vp}{\underline{\mathit{p}}}
+\newcommand{\vq}{\underline{\mathit{q}}}
+\newcommand{\vr}{\underline{\mathit{r}}}
+\newcommand{\vs}{\underline{\mathit{s}}}
+\newcommand{\vt}{\underline{\mathit{t}}}
+\newcommand{\vu}{\underline{\mathit{u}}}
+\newcommand{\vv}{\underline{\mathit{v}}}
+\newcommand{\vw}{\underline{\mathit{w}}}
+\newcommand{\vx}{\underline{\mathit{x}}}
+\newcommand{\vy}{\underline{\mathit{y}}}
+\newcommand{\vz}{\underline{\mathit{z}}}
+\newcommand{\VA}{\underline{\mathit{A}}}
+\newcommand{\VB}{\underline{\mathit{B}}}
+\newcommand{\VC}{\underline{\mathit{C}}}
+\newcommand{\VD}{\underline{\mathit{D}}}
+\newcommand{\VE}{\underline{\mathit{E}}}
+\newcommand{\VF}{\underline{\mathit{F}}}
+\newcommand{\VG}{\underline{\mathit{G}}}
+\newcommand{\VH}{\underline{\mathit{H}}}
+\newcommand{\VI}{\underline{\mathit{I}}}
+\newcommand{\VJ}{\underline{\mathit{J}}}
+\newcommand{\VK}{\underline{\mathit{K}}}
+\newcommand{\VL}{\underline{\mathit{L}}}
+\newcommand{\VM}{\underline{\mathit{M}}}
+\newcommand{\VN}{\underline{\mathit{N}}}
+\newcommand{\VO}{\underline{\mathit{O}}}
+\newcommand{\VP}{\underline{\mathit{P}}}
+\newcommand{\VQ}{\underline{\mathit{Q}}}
+\newcommand{\VR}{\underline{\mathit{R}}}
+\newcommand{\VS}{\underline{\mathit{S}}}
+\newcommand{\VT}{\underline{\mathit{T}}}
+\newcommand{\VU}{\underline{\mathit{U}}}
+\newcommand{\VV}{\underline{\mathit{V}}}
+\newcommand{\VW}{\underline{\mathit{W}}}
+\newcommand{\VX}{\underline{\mathit{X}}}
+\newcommand{\VY}{\underline{\mathit{Y}}}
+\newcommand{\VZ}{\underline{\mathit{Z}}}
+\newcommand{\vA}{\underline{\mathcal{A}}}
+\newcommand{\vB}{\underline{\mathcal{B}}}
+\newcommand{\vC}{\underline{\mathcal{C}}}
+\newcommand{\vD}{\underline{\mathcal{D}}}
+\newcommand{\vE}{\underline{\mathcal{E}}}
+\newcommand{\vF}{\underline{\mathcal{F}}}
+\newcommand{\vG}{\underline{\mathcal{G}}}
+\newcommand{\vH}{\underline{\mathcal{H}}}
+\newcommand{\vI}{\underline{\mathcal{I}}}
+\newcommand{\vJ}{\underline{\mathcal{J}}}
+\newcommand{\vK}{\underline{\mathcal{K}}}
+\newcommand{\vL}{\underline{\mathcal{L}}}
+\newcommand{\vM}{\underline{\mathcal{M}}}
+\newcommand{\vN}{\underline{\mathcal{N}}}
+\newcommand{\vO}{\underline{\mathcal{O}}}
+\newcommand{\vP}{\underline{\mathcal{P}}}
+\newcommand{\vQ}{\underline{\mathcal{Q}}}
+\newcommand{\vR}{\underline{\mathcal{R}}}
+\newcommand{\vS}{\underline{\mathcal{S}}}
+\newcommand{\vT}{\underline{\mathcal{T}}}
+\newcommand{\vU}{\underline{\mathcal{U}}}
+\newcommand{\vV}{\underline{\mathcal{V}}}
+\newcommand{\vW}{\underline{\mathcal{W}}}
+\newcommand{\vX}{\underline{\mathcal{X}}}
+\newcommand{\vY}{\underline{\mathcal{Y}}}
+\newcommand{\vZ}{\underline{\mathcal{Z}}}
+
+\newcommand{\vchi}{\underline{\chi}}
+\newcommand{\vsigma}{\underline{\sigma}}
+\newcommand{\vrho}{\underline{\rho}}
+\newcommand{\vgamma}{\underline{\gamma}}
+
+
+% Elenco dei versori
+\newcommand{\vva}{\hat{\mathrm{a}}}
+\newcommand{\vvb}{\hat{\mathrm{b}}}
+\newcommand{\vvc}{\hat{\mathrm{c}}}
+\newcommand{\vvd}{\hat{\mathrm{d}}}
+\newcommand{\vve}{\hat{\mathrm{e}}}
+\newcommand{\vvf}{\hat{\mathrm{f}}}
+\newcommand{\vvg}{\hat{\mathrm{g}}}
+\newcommand{\vvh}{\hat{\mathrm{h}}}
+\newcommand{\vvi}{\hat{\mathrm{i}}}
+\newcommand{\vvj}{\hat{\mathrm{j}}}
+\newcommand{\vvk}{\hat{\mathrm{k}}}
+\newcommand{\vvl}{\hat{\mathrm{l}}}
+\newcommand{\vvm}{\hat{\mathrm{m}}}
+\newcommand{\vvn}{\hat{\mathrm{n}}}
+\newcommand{\vvo}{\hat{\mathrm{o}}}
+\newcommand{\vvp}{\hat{\mathrm{p}}}
+\newcommand{\vvq}{\hat{\mathrm{q}}}
+\newcommand{\vvr}{\hat{\mathrm{r}}}
+\newcommand{\vvs}{\hat{\mathrm{s}}}
+\newcommand{\vvt}{\hat{\mathrm{t}}}
+\newcommand{\vvu}{\hat{\mathrm{u}}}
+\newcommand{\vvv}{\hat{\mathrm{v}}}
+\newcommand{\vvw}{\hat{\mathrm{w}}}
+\newcommand{\vvx}{\hat{\mathrm{x}}}
+\newcommand{\vvy}{\hat{\mathrm{y}}}
+\newcommand{\vvz}{\hat{\mathrm{z}}}
+
+\newcommand{\hH}{\widehat{\mathrm{H}}}
+\newcommand{\hJ}{\widehat{\mathrm{J}}}
+\newcommand{\hY}{\widehat{\mathrm{Y}}}
+\newcommand{\vpsi}{\underline{\psi}}
+\newcommand{\vphi}{\underline{\phi}}
+\newcommand{\vvarphi}{\underline{\varphi}}
+\newcommand{\vvalpha}{\hat{\alpha}}
+\newcommand{\vvbeta}{\hat{\beta}}
+\newcommand{\vvtheta}{\hat{\vartheta}}
+\newcommand{\vvis}{\hat{\mathit{s}}}
+\newcommand{\vvnu}{\hat{\nu}}
+\newcommand{\vvrho}{\hat{\rho}}
+\newcommand{\vvphi}{\hat{\varphi}}
+% Definizione alternativa con il bold:
+%\newcommand{\vvz}{\hat{\mathrm{\textbf{z}}}}
+
+% Elenco delle matrici
+\newcommand{\DA}{\underline{\underline{\mathit{A}}}}
+\newcommand{\DB}{\underline{\underline{\mathit{B}}}}
+\newcommand{\DC}{\underline{\underline{\mathit{C}}}}
+\newcommand{\DD}{\underline{\underline{\mathit{D}}}}
+\newcommand{\DE}{\underline{\underline{\mathit{E}}}}
+\newcommand{\DF}{\underline{\underline{\mathit{F}}}}
+\newcommand{\DG}{\underline{\underline{\mathit{G}}}}
+\renewcommand{\DH}{\underline{\underline{\mathit{H}}}}
+\newcommand{\DI}{\underline{\underline{\mathit{I}}}}
+\renewcommand{\DJ}{\underline{\underline{\mathit{J}}}}
+\newcommand{\DK}{\underline{\underline{\mathit{K}}}}
+\newcommand{\DL}{\underline{\underline{\mathit{L}}}}
+\newcommand{\DM}{\underline{\underline{\mathit{M}}}}
+\newcommand{\DN}{\underline{\underline{\mathit{N}}}}
+\newcommand{\DO}{\underline{\underline{\mathit{O}}}}
+\newcommand{\DP}{\underline{\underline{\mathit{P}}}}
+\newcommand{\DQ}{\underline{\underline{\mathit{Q}}}}
+\newcommand{\DR}{\underline{\underline{\mathit{R}}}}
+\newcommand{\DS}{\underline{\underline{\mathit{S}}}}
+\newcommand{\DT}{\underline{\underline{\mathit{T}}}}
+\newcommand{\DU}{\underline{\underline{\mathit{U}}}}
+\newcommand{\DV}{\underline{\underline{\mathit{V}}}}
+\newcommand{\DW}{\underline{\underline{\mathit{W}}}}
+\newcommand{\DX}{\underline{\underline{\mathit{X}}}}
+\newcommand{\DY}{\underline{\underline{\mathit{Y}}}}
+\newcommand{\DZ}{\underline{\underline{\mathit{Z}}}}
+\newcommand{\dA}{\underline{\underline{\mathcal{A}}}}
+\newcommand{\dB}{\underline{\underline{\mathcal{B}}}}
+\newcommand{\dC}{\underline{\underline{\mathcal{C}}}}
+\newcommand{\dD}{\underline{\underline{\mathcal{D}}}}
+\newcommand{\dE}{\underline{\underline{\mathcal{E}}}}
+\newcommand{\dF}{\underline{\underline{\mathcal{F}}}}
+\newcommand{\dG}{\underline{\underline{\mathcal{G}}}}
+\newcommand{\dH}{\underline{\underline{\mathcal{H}}}}
+\newcommand{\dI}{\underline{\underline{\mathcal{I}}}}
+\newcommand{\dJ}{\underline{\underline{\mathcal{J}}}}
+\newcommand{\dK}{\underline{\underline{\mathcal{K}}}}
+\newcommand{\dL}{\underline{\underline{\mathcal{L}}}}
+\newcommand{\dM}{\underline{\underline{\mathcal{M}}}}
+\newcommand{\dN}{\underline{\underline{\mathcal{N}}}}
+\newcommand{\dO}{\underline{\underline{\mathcal{O}}}}
+\newcommand{\dP}{\underline{\underline{\mathcal{P}}}}
+\newcommand{\dQ}{\underline{\underline{\mathcal{Q}}}}
+\newcommand{\dR}{\underline{\underline{\mathcal{R}}}}
+\newcommand{\dS}{\underline{\underline{\mathcal{S}}}}
+\newcommand{\dT}{\underline{\underline{\mathcal{T}}}}
+\newcommand{\dU}{\underline{\underline{\mathcal{U}}}}
+\newcommand{\dV}{\underline{\underline{\mathcal{V}}}}
+\newcommand{\dW}{\underline{\underline{\mathcal{W}}}}
+\newcommand{\dX}{\underline{\underline{\mathcal{X}}}}
+\newcommand{\dY}{\underline{\underline{\mathcal{Y}}}}
+\newcommand{\dZ}{\underline{\underline{\mathcal{Z}}}}
+
+% Lettere calligrafiche
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cQ}{\mathcal{Q}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cU}{\mathcal{U}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cZ}{\mathcal{Z}}
+
+% Finisce qua l'elenco finale
+
+%\renewcommand{\rho}{\varrho}
+\renewcommand{\theta}{\vartheta}
+
+
+
+
+%\newcommand{\vJe}{\underline{\mathcal{J}}_\mathrm{e}}
+%\newcommand{\vJc}{\underline{\mathcal{J}}_\mathrm{c}}
+%\newcommand{\vJm}{\underline{\mathcal{J}}_\mathrm{m}}
+%\newcommand{\veb}{\hat{\beta}}
+%\newcommand{\vea}{\hat{\alpha}}
+%\newcommand{\tk}{\tilde{\mathit{k}}}
+%\newcommand{\tZ}{\tilde{\mathit{Z}}}
+%\newcommand{\FE}{\tilde{\mathit{E}}} % NO IO LA TILDE LA FAREI CON LA T. E COMBINARLI CON PER ESEMPIO DTE: MATRICE TILDE E
+%\newcommand{\FH}{\tilde{\mathit{H}}}
+%
+
+
+% Indicazione di come si creano SUL SERIO operatori matematici (sinc, arccos...)
+
+% \DeclareMathOperator{\Realpart}{Re}
+
+
+
+
+
+
